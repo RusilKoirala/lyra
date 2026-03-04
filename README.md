@@ -66,12 +66,37 @@ Note down the IP from the last command.
 
 ## Step 2 — SSH into the VM
 
-```bash
-ssh -i ~/key.pem azureuser@<YOUR_VM_IP>
-```
+Download the connection script for your OS, set your IP, and run it.
 
-> If you used `--generate-ssh-keys` above, Azure saved the key to `~/.ssh/id_rsa`.  
-> In that case just use: `ssh azureuser@<YOUR_VM_IP>`
+### Mac / Linux
+
+1. Edit `connect-mac-linux.sh` — set `VM_IP` at the top:
+   ```bash
+   export VM_IP="20.x.x.x"   # ← your VM's public IP
+   ```
+2. Run it:
+   ```bash
+   bash connect-mac-linux.sh
+   ```
+
+### Windows
+
+> Requires **PowerShell 5+** and **OpenSSH** (built into Windows 10/11).  
+> Save your `key.pem` to `C:\Users\YourName\key.pem` (i.e. `$HOME\key.pem`).
+
+1. Edit `connect-windows.ps1` — set `VM_IP` at the top:
+   ```powershell
+   $env:VM_IP = "20.x.x.x"   # ← your VM's public IP
+   ```
+2. Run it in PowerShell:
+   ```powershell
+   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+   .\connect-windows.ps1
+   ```
+
+> **No key file?** If you used `--generate-ssh-keys` when creating the VM, Azure saved the key automatically.  
+> Mac/Linux: `~/.ssh/id_rsa` | Windows: `C:\Users\YourName\.ssh\id_rsa`  
+> Update the `KEY` / `$KEY` variable in the script to point there instead.
 
 ---
 
