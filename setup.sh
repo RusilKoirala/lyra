@@ -86,10 +86,11 @@ BASHRC
   success "FNM added to ~/.bashrc"
 fi
 
-fnm install 22 --silent 2>/dev/null || true
+info "  Installing Node.js 22 (this may take a minute)..."
+fnm install 22
 fnm use 22
 fnm default 22
-eval "$(fnm env)" 2>/dev/null || true
+eval "$(fnm env)"
 
 echo "  Node : $(node --version)"
 echo "  npm  : $(npm --version)"
