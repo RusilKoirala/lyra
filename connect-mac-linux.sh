@@ -1,14 +1,18 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════════════════════
-#  ClawBot — SSH Connect Script for Mac / Linux
-#  Usage: bash connect-mac-linux.sh
+#  ClawBot — Connect to VM  (Mac / Linux)
+#
+#  HOW TO USE:
+#  1. Change the IP below to your Azure VM's IP address
+#  2. Make sure your key.pem is saved at ~/key.pem
+#  3. Run:  bash connect-mac-linux.sh
 # ═══════════════════════════════════════════════════════════════
 
-# ── SET YOUR VM IP HERE ──────────────────────────────────────
+# ↓↓↓ CHANGE THIS TO YOUR VM'S IP ADDRESS ↓↓↓
 export VM_IP="PASTE_YOUR_IP_HERE"
-# ─────────────────────────────────────────────────────────────
+# ↑↑↑ THAT'S THE ONLY LINE YOU NEED TO CHANGE ↑↑↑
 
-# Key file location — change this if you saved it elsewhere
+# Key file — update this path if your key.pem is saved somewhere else
 KEY="$HOME/key.pem"
 
 # ── Sanity checks ────────────────────────────────────────────

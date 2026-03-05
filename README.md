@@ -1,40 +1,36 @@
 # 🦞 ClawBot Setup Guide
 
-Self-hosted AI assistant on Azure — Telegram + Discord + Web dashboard.  
-Follow these steps top to bottom. Each block is meant to be **copy-pasted directly**.
+> Just follow the steps. Each code block = copy, paste, done.
 
 ---
 
-## Before you begin — grab these 3 things
+## 🗝️ First — get these 3 things ready
 
-You'll need them when the setup script asks:
+Open these links and copy your tokens before you start:
 
-| What | Where to get it |
-|---|---|
-| **OpenRouter API key** | https://openrouter.ai/keys → Create key |
-| **Telegram Bot token** | https://t.me/BotFather → `/newbot` → copy the token |
-| **Discord Bot token** | https://discord.com/developers/applications → New App → Bot → Reset Token |
+| # | What | Link |
+|---|---|---|
+| 1 | **OpenRouter API key** | https://openrouter.ai/keys → click **Create key** |
+| 2 | **Telegram Bot token** | https://t.me/BotFather → send `/newbot` → copy the token it gives you |
+| 3 | **Discord Bot token** | https://discord.com/developers/applications → New Application → Bot tab → **Reset Token** → copy it |
+
+Save them somewhere. The setup script will ask for them.
 
 ---
 
-## Step 1 — Create the Azure VM
+## Step 1 — Make the Azure VM
 
-> Skip this if you already have a VM running Ubuntu 22.04.
+> **Already have a Ubuntu 22.04 VM?** Skip to Step 2.
 
-Install the Azure CLI first if you don't have it: https://aka.ms/installazurecli
+First install the Azure CLI if you haven't: https://aka.ms/installazurecli
 
-Paste this in your **local terminal**:
+Then open a terminal on your computer and paste all of this at once:
 
 ```bash
-# Login
 az login
 
-# Create resource group
-az group create \
-  --name openclaw-rg \
-  --location koreacentral
+az group create --name openclaw-rg --location koreacentral
 
-# Create the VM  (same spec as the reference machine)
 az vm create \
   --resource-group openclaw-rg \
   --name openclaw-vm \
@@ -47,12 +43,14 @@ az vm create \
   --enable-vtpm true \
   --public-ip-sku Standard
 
-# Open SSH, HTTP, and HTTPS ports
 az vm open-port --resource-group openclaw-rg --name openclaw-vm --port 22  --priority 1000
 az vm open-port --resource-group openclaw-rg --name openclaw-vm --port 80  --priority 1010
 az vm open-port --resource-group openclaw-rg --name openclaw-vm --port 443 --priority 1020
+```
 
-# Get your VM's public IP
+Then run this to get your VM's IP address — **copy it down**:
+
+```bash
 az vm list-ip-addresses \
   --resource-group openclaw-rg \
   --name openclaw-vm \
@@ -60,120 +58,105 @@ az vm list-ip-addresses \
   --output tsv
 ```
 
-Note down the IP from the last command.
+---
+
+## Step 2 — Connect to the VM
+
+Pick your OS below. You only need to change **one line** — your IP.
 
 ---
 
-## Step 2 — SSH into the VM
+### 🍎 Mac or Linux
 
-Download the connection script for your OS, set your IP, and run it.
-
-### Mac / Linux
-
-1. Edit `connect-mac-linux.sh` — set `VM_IP` at the top:
+1. Download [`connect-mac-linux.sh`](connect-mac-linux.sh) from this repo
+2. Open it in any text editor and change this one line at the top:
    ```bash
-   export VM_IP="20.x.x.x"   # ← your VM's public IP
+   export VM_IP="PASTE_YOUR_IP_HERE"   # ← put your IP here
    ```
-2. Run it:
+3. Save the file, then run:
    ```bash
    bash connect-mac-linux.sh
    ```
 
-### Windows
+> Your key file should be at `~/key.pem`. If it's somewhere else, also update the `KEY=` line in the script.
 
-> Requires **PowerShell 5+** and **OpenSSH** (built into Windows 10/11).  
-> Save your `key.pem` to `C:\Users\YourName\key.pem` (i.e. `$HOME\key.pem`).
+---
 
-1. Edit `connect-windows.ps1` — set `VM_IP` at the top:
+### 🪟 Windows
+
+> Make sure you have **OpenSSH** installed — it comes with Windows 10/11 by default.
+
+1. Download [`connect-windows.ps1`](connect-windows.ps1) from this repo
+2. Open it in Notepad and change this one line at the top:
    ```powershell
-   $env:VM_IP = "20.x.x.x"   # ← your VM's public IP
+   $env:VM_IP = "PASTE_YOUR_IP_HERE"   # ← put your IP here
    ```
-2. Run it in PowerShell:
+3. Save your `key.pem` file to `C:\Users\YourName\key.pem`
+4. Open **PowerShell** (search for it in Start menu), then run:
    ```powershell
    Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-   .\connect-windows.ps1
    ```
-
-> **No key file?** If you used `--generate-ssh-keys` when creating the VM, Azure saved the key automatically.  
-> Mac/Linux: `~/.ssh/id_rsa` | Windows: `C:\Users\YourName\.ssh\id_rsa`  
-> Update the `KEY` / `$KEY` variable in the script to point there instead.
+   Then drag-and-drop the `connect-windows.ps1` file into the PowerShell window and press Enter.
 
 ---
 
-## Step 3 — Run the setup script inside the VM
+Once connected you'll see a prompt like `azureuser@openclaw-vm:~$` — you're in. ✅
 
-Once you're **inside the VM**, paste this one command:
+---
+
+## Step 3 — Install ClawBot on the VM
+
+You're now inside the VM. Paste this one line and press Enter:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/rusilkoirala/lyra/main/setup.sh | bash
+curl -fsSL https://raw.githubusercontent.com/RusilKoirala/lyra/main/setup.sh | bash
 ```
 
-The script will prompt you for the 3 tokens from above, then fully configure everything automatically.
+It will ask for your **3 tokens** from Step 0. Paste them in when prompted.
 
----
-
-### What it installs
-
-```
-[1/8]  System packages          git, curl, jq, openssl, nginx
-[2/8]  Node.js 22               via FNM
-[3/8]  openclaw + clawhub       npm install -g
-[4/8]  Config                   ~/.openclaw/openclaw.json
-[5/8]  TLS certificate          self-signed, /etc/nginx/ssl/
-[6/8]  nginx                    HTTP → HTTPS → proxy to gateway
-[7/8]  systemd service          openclaw-gateway (auto-restart)
-[8/8]  Daily digest cron        08:00 AM NPT via Telegram
-```
-
-When it finishes you'll see your **gateway token** and dashboard URL printed in the terminal.
+Then it runs automatically — takes ~2 minutes. When done it prints your dashboard link and token.
 
 ---
 
 ## Step 4 — Open the dashboard
 
-1. Go to `https://<YOUR_VM_IP>/` in your browser  
-   *(click through the self-signed cert warning)*
-2. Paste the **gateway token** shown at the end of the setup output
-3. Approve the browser session on the VM:
+1. Go to `https://YOUR_VM_IP/` in your browser
+2. You'll see a cert warning — click **Advanced → Proceed** (it's safe, just self-signed)
+3. Paste the **gateway token** from the terminal output
+4. Back in the VM terminal, approve the browser:
+   ```bash
+   openclaw devices list
+   openclaw devices approve <requestId>
+   ```
 
-```bash
-openclaw devices list
-openclaw devices approve <requestId>
-```
-
-That's it — your bot is live on Telegram and Discord. ✅
+Your bot is now live on Telegram and Discord. ✅
 
 ---
 
-## Useful commands
+## Useful commands (run inside the VM)
 
 ```bash
-# Check everything is running
-openclaw gateway status
-openclaw health
+openclaw gateway status        # is it running?
+openclaw health                # full health check
+openclaw channels list         # see connected bots
 
-# Live gateway logs
-journalctl --user -u openclaw-gateway -f
+journalctl --user -u openclaw-gateway -f   # live logs
+systemctl --user restart openclaw-gateway  # restart
 
-# Restart the gateway
-systemctl --user restart openclaw-gateway
-
-# Update to latest
-npm install -g openclaw@latest && systemctl --user restart openclaw-gateway
+npm install -g openclaw@latest && systemctl --user restart openclaw-gateway  # update
 ```
 
 ---
 
-## Troubleshooting
+## Something broke?
 
 | Problem | Fix |
 |---|---|
-| Can't reach dashboard | Make sure NSG has ports **80 + 443** open (Step 1) |
-| Gateway not running | `systemctl --user start openclaw-gateway` |
-| Telegram bot silent | `openclaw channels list` — verify token |
-| Discord bot offline | Enable **Message Content Intent** in the Discord developer portal |
-| Service dies on logout | `sudo loginctl enable-linger $USER` |
-| See logs | `journalctl --user -u openclaw-gateway -f` |
+| Can't open dashboard in browser | Make sure ports **80 and 443** are open — run the `az vm open-port` commands from Step 1 again |
+| Bot not responding on Telegram | Run `openclaw channels list` — check the token is correct |
+| Discord bot shows offline | Go to Discord Developer Portal → your app → Bot → enable **Message Content Intent** |
+| Everything stopped after you closed the terminal | Run `sudo loginctl enable-linger $USER` inside the VM |
+| Want to see what's happening | Run `journalctl --user -u openclaw-gateway -f` inside the VM |
 
 ---
 

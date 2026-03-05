@@ -1,13 +1,20 @@
 # ═══════════════════════════════════════════════════════════════
-#  ClawBot — SSH Connect Script for Windows (PowerShell)
-#  Run in PowerShell (Windows 10/11 has OpenSSH built-in)
+#  ClawBot — Connect to VM  (Windows PowerShell)
+#
+#  HOW TO USE:
+#  1. Change the IP below to your Azure VM's IP address
+#  2. Make sure your key.pem is saved at C:\Users\YourName\key.pem
+#  3. Right-click this file → "Run with PowerShell"
+#     OR open PowerShell and run:
+#        Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+#        .\connect-windows.ps1
 # ═══════════════════════════════════════════════════════════════
 
-# ── SET YOUR VM IP HERE ──────────────────────────────────────
+# ↓↓↓ CHANGE THIS TO YOUR VM'S IP ADDRESS ↓↓↓
 $env:VM_IP = "PASTE_YOUR_IP_HERE"
-# ─────────────────────────────────────────────────────────────
+# ↑↑↑ THAT'S THE ONLY LINE YOU NEED TO CHANGE ↑↑↑
 
-# Key file location — change this if you saved it elsewhere
+# Key file — update this path if your key.pem is saved somewhere else
 $KEY = "$HOME\key.pem"
 
 # ── Sanity checks ────────────────────────────────────────────
